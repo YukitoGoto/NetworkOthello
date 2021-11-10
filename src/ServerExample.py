@@ -19,7 +19,7 @@ color = {
 board = [[None] * NUM_SQUARE for i in range(NUM_SQUARE)]
 
 # Socketの作成
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # IP Adress とPort番号をソケット割り当てる
 s.bind((socket.gethostname(), port))
 # Socketの待機状態
