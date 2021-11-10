@@ -228,9 +228,11 @@ class Othello():
     def click(self, event):
         '''盤面がクリックされた時の処理'''
 
+        '''
         if self.player != YOU:
             # COMが石を置くターンの時は何もしない
             return
+        '''
 
         # クリックされた位置がどのマスであるかを計算
         x = event.x // self.square_size
@@ -269,9 +271,11 @@ class Othello():
         placable = self.getPlacable()
         self.showPlacable(placable)
 
+        '''
         if self.player == COM:
             # 次のプレイヤーがCOMの場合は1秒後にCOMに石を置く場所を決めさせる
             self.master.after(1000, self.com)
+        '''
 
     def reverse(self, x, y):
         '''(x,y)に石が置かれた時に裏返す必要のある石を裏返す'''
