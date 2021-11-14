@@ -17,7 +17,7 @@ clientBoard[1][5] = PlayerColor[PlayerNum.PLAYER1]
 clientBoard[2][5] = PlayerColor[PlayerNum.PLAYER2]
 
 # ネットワーク情報
-PORT_NUM = 7010
+PORT_NUM = 8888
 BUFFER_SIZE = 4092
 
 

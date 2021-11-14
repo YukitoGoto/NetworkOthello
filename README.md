@@ -8,3 +8,4 @@
 - [【Python3】Pythonでソケット通信を試してみた](https://dev.classmethod.jp/articles/python3socketserver/)
 ### Thread
 - [bjgame](https://github.com/ttgk5/bjgame)
+- [サーバーソケットの多重化](https://engineeringnote.hateblo.jp/entry/python/network-programming/server-multi-thread)
