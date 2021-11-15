@@ -21,12 +21,12 @@ clientBoard[4][4] = PlayerColor[PlayerNum.PLAYER1]
 # ネットワーク情報
 PORT_NUM = 7010
 BUFFER_SIZE = 4092
+player = 0 # 0:black 1:white
 
 # フラグ情報
-player_flag = 0
 game_start_flag = 0
+check_flag = 0
 board_update_flag = 0
-turn_flag = 0
 
 # Socketの作成
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,36 +42,38 @@ while True:
             print("Welcome Othello Game! please wait ...")
         elif res == b'PLAY1':
             print("Your color is \'black\'")
-            player_flag = 1
+            player = 0
         elif res == b'PLAY2':
             print("Your color is \'white\'")
-            player_flag = 2
+            player = 1
         elif res == b'MATCH':
             print("Matching success! Game start!")
             game_start_flag = 1
             time.sleep(0.5)
-            break
 
-    while True:
+    while check_flag == 0:
         # サーバーからターン情報(5byte)を受信
         res = s.recv(5)
-        # 自分のターンの場合
-        if res == b'TURNN':
+        # black_turn
+        if res == b'TURNB':
             # 盤面変更(テスト用)
-            if player_flag == 1:
+            if player == 0:
                 clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER1]
-            if player_flag == 2:
+            if player == 1:
                 clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER2]
             # 盤面送信
             sendBytes = pickle.dumps(clientBoard)
             s.send(sendBytes)
-            turn_flag = 1
-        # 相手のターンの場合
-        if res == b'WAITN':
-            # 待機メッセージを表示
-            print('Waiting others...')
-            turn_flag = 0
-
+        # white_turn
+        if res == b'TURNW':
+            # 盤面変更(テスト用)
+            if player == 0:
+                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER1]
+            if player == 1:
+                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER2]
+            # 盤面送信
+            sendBytes = pickle.dumps(clientBoard)
+            s.send(sendBytes)
         # 盤面更新が終わるまで待機
         while True:
             res = s.recv(5)
@@ -91,5 +93,5 @@ while True:
             break
 
     # フラグを元に戻す
-    board_update_flag = 0
+    check_flag = 0
     time.sleep(3)
