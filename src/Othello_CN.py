@@ -40,7 +40,6 @@ def leftClick(event):
         temp=enemy_color
         enemy_color=your_color
         your_color=temp
-        print(your_color)
 
     circle_draw()
     placeableflg=False
@@ -104,19 +103,19 @@ def circle_draw():
                 canvas.create_oval(xs,ys,xe,ye,width=1.0,fill="black")
 
 def putablecheck():
-    passflg=False
+    passflg=True
     for putable_y in range(len(board)):
         for putable_x in range(len(board[putable_y])):
             if(board[putable_x][putable_y]==None):
                 putable=reverse_check(putable_x,putable_y)
                 if(putable):
-                    passflg=True
+                    passflg=False
                     xs=putable_x*50
                     ys=putable_y*50
                     xe=(putable_x+1)*50
                     ye=(putable_y+1)*50
                     canvas.create_rectangle(xs,ys,xe,ye,fill="yellow")
-    if(passflg==False):
+    if(passflg):
         global your_color
         global enemy_color
 
