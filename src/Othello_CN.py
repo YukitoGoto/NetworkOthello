@@ -17,18 +17,20 @@ board= [[None,None,None,None,None,None,None,None],
 your_color="white"
 enemy_color="black"
 
+isGameover=False
+
 def leftClick(event):
 
     global your_color
     global enemy_color 
     global placeableflg
-    global endflg
+    global gameover_cnt
 
     clix=event.x//50
     cliy=event.y//50
     putflg=False
     placeableflg=True
-    endflg=True
+    gameover_cnt=0
 
     othello_board_draw()
 
@@ -45,6 +47,9 @@ def leftClick(event):
     placeableflg=False
     putablecheck()
     yourturn_draw()
+
+    if(isGameover):
+        Gameover()
 
 def reverse_check(clix,cliy):
     putflg=False
@@ -104,6 +109,7 @@ def circle_draw():
 
 def putablecheck():
     passflg=True
+    global gameover_cnt
     for putable_y in range(len(board)):
         for putable_x in range(len(board[putable_y])):
             if(board[putable_x][putable_y]==None):
@@ -118,26 +124,47 @@ def putablecheck():
     if(passflg):
         global your_color
         global enemy_color
+        global Static2
 
-        Static2=tkinter.Label(text="pass...",foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+        Static2=tkinter.Label(text=str(your_color)+" pass...",foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
         Static2.pack()                                                                  #表示
         Static2.place(x=500,y=200)
 
-        sleep(1)
+        r.after(1000,passdel)
 
         temp=enemy_color
         enemy_color=your_color
         your_color=temp
-        if(endflg):
-            pass
-        else:
+        
+        if(gameover_cnt<2):
+            gameover_cnt+=1
             putablecheck()
+        else:
+            global isGameover
+            isGameover=True
 
+def passdel():
+    Static2.place_forget()
 
 def yourturn_draw():
     Static1=tkinter.Label(text=your_color,foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
     Static1.pack()                                                                  #表示
     Static1.place(x=500,y=100)
+
+def Gameover():
+    white_count=0
+    black_count=0
+    for y in range(len(board)):
+        white_count+=board[y].count("white")
+        black_count+=board[y].count("black")
+    print(white_count)
+    print(black_count)
+    if(white_count>black_count):
+        print("white win")
+    else:
+        print("black win")
+
+
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
 
 r=tkinter.Tk()
