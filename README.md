@@ -10,3 +10,4 @@
 ### Thread
 - [bjgame](https://github.com/ttgk5/bjgame)
 - [サーバーソケットの多重化](https://engineeringnote.hateblo.jp/entry/python/network-programming/server-multi-thread)
+- [threading --- スレッドベースの並列処理](https://docs.python.org/ja/3.7/library/threading.html)
