@@ -5,9 +5,21 @@ import errno
 import threading
 import pickle
 
-PORT_NUMBER 8000
-BUFFER_SIZE 512
- 
+PORT_NUMBER = 8888
+BUFFER_SIZE = 512
+
+'''
+[from server]
+turn(0:white-1:black)
+passflag(true-false)
+gameoverflag(ture-false)
+board(list)
+[from client1]
+board(list)
+[fomr client2]
+board(list)
+'''
+
 def create_server_socket(portNumber):
     try:
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,14 +36,14 @@ def create_server_socket(portNumber):
         serverSocket.listen(socket.SOMAXCONN)
     except OSError as e:
         print("listen:{}".format(e))
-        serverScoket.close()
+        serverSocket.close()
         sys.exit(1)
     return serverSocket
 
 def accept_loop(serverSocket, bufferSize):
     while True:
         try:
-            clientSocket, addr = soc.accept()
+            clientSocket, addr = serverSocket.accept()
             t = threading.Thread(target=send_recieve, args=(clientSocket, bufferSize))
             t.start()             
         except InterruptedError as e:
@@ -54,25 +66,23 @@ def send_recieve(clientSocket, bufferSize):
             break
         try:
             receivedBytes = receivedBytes.rstrip()
-	        boardData = pickle.loads(receivedBytes)
-	        print(boardData)
-	        sendBytes = pickle.dumps(boardData)
-	        clientSocket.send(sendBytes)
+            boardData = pickle.loads(receivedBytes)
+            print(boardData)
+            sendBytes = pickle.dumps(boardData)
         except:
             print("pickle:{}", pickle.PicklingError)
-            break
         try:
             clientSocket.send(sendBytes)
         except InterruptedError as e:
             print("send:{}".format(e))
             break
     clientSocket.close()
- 
+
 if __name__ == '__main__':
-    serverSocket = create_server_socket(PORT_NUM)
+    serverSocket = create_server_socket(PORT_NUMBER)
     try:
         accept_loop(serverSocket, BUFFER_SIZE)
-        soc.close()
+        serverSocket.close()
     except KeyboardInterrupt:
-        soc.close()
+        serverSocket.close()
         sys.exit(1)
