@@ -3,6 +3,8 @@ import pickle
 from enum import IntEnum
 import time
 
+from ServerExample import Turn
+
 # ゲーム情報
 class PlayerNum(IntEnum):
 	PLAYER1 = 1
@@ -22,11 +24,11 @@ clientBoard[4][4] = PlayerColor[PlayerNum.PLAYER1]
 PORT_NUM = 7010
 BUFFER_SIZE = 4092
 player = 0 # 0:black 1:white
+Turn # 0:black 1:white
 
 # フラグ情報
 game_start_flag = 0
 check_flag = 0
-board_update_flag = 0
 
 # Socketの作成
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,42 +58,35 @@ while True:
         res = s.recv(5)
         # black_turn
         if res == b'TURNB':
-            # 盤面変更(テスト用)
-            if player == 0:
-                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER1]
-            if player == 1:
-                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER2]
-            # 盤面送信
-            sendBytes = pickle.dumps(clientBoard)
-            s.send(sendBytes)
+            Turn = 0
         # white_turn
         if res == b'TURNW':
-            # 盤面変更(テスト用)
-            if player == 0:
-                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER1]
-            if player == 1:
-                clientBoard[0][0] = PlayerColor[PlayerNum.PLAYER2]
-            # 盤面送信
-            sendBytes = pickle.dumps(clientBoard)
-            s.send(sendBytes)
-        # 盤面更新が終わるまで待機
-        while True:
-            res = s.recv(5)
-            # ターンが終了し、盤面更新が終わった場合
-            if res == b'CHECK':
-                # 次のターンのクライアントは盤面を受信する
-                if turn_flag == 0:
-                    receivedBytes = s.recv(BUFFER_SIZE)
-                    data = pickle.loads(receivedBytes)
-                    print(*data, sep = '\n')
-                board_update_flag = 1
-                # ループを抜ける
-                break
-
-        # クライアントのタイミングを同期させる
-        if board_update_flag == 1:
+            Turn = 1
+        # 受信対象のクライアントは受信準備完了をサーバーに知らせる
+        if Turn == player:
+            s.send("CHECK".encode("utf-8"))
+            check_flag = 1
+        elif Turn != player:
+            print("Waiting others...")
             break
+    
+    # ターンが来ているクライアントはボードの送受信をする
+    if Turn == player:
+        # ボード受信
+        receivedBytes = s.recv(BUFFER_SIZE)
+        data = pickle.loads(receivedBytes)
+        print(*data, sep = '\n')
+        clientBoard = data
+        # テスト用(ボード更新)
+        if player == 0:
+            clientBoard[1][1] = PlayerColor[PlayerNum.PLAYER1]
+        elif player == 1:
+            clientBoard[1][1] = PlayerColor[PlayerNum.PLAYER2]
+        
+        # ボード送信
+        sendBytes = pickle.dumps(clientBoard)
+        s.send(sendBytes)
 
-    # フラグを元に戻す
-    check_flag = 0
-    time.sleep(3)
+        # フラグを元に戻す
+        check_flag = 0
+        time.sleep(3)
