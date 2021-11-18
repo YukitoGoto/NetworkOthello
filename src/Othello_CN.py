@@ -29,7 +29,6 @@ def leftClick(event):
     
     if(isGameover==False):
         if(turn==your_color):
-
             clix=event.x//50
             cliy=event.y//50
             putflg=False
