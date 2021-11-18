@@ -33,73 +33,55 @@ board(list)
 
 def main():
     serverSocket = create_server_socket()
-    try:
-        accept_loop(serverSocket)
-        serverSocket.close()
-    except KeyboardInterrupt:
-        serverSocket.close()
-        sys.exit(1)
+    entry_accept(serverSocket)
 
 def create_server_socket():
     try:
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         serverSocket.bind((socket.gethostname(), PORT_NUMBER))
         serverSocket.listen(socket.SOMAXCONN)
-    except OSError as e:
-        print("create_server_socket:{}".format(e))
-        serverSocket.close()
+        return serverSocket
+    except Exception as e:
+        print(e)
         sys.exit(1)
-    return serverSocket
 
 def send_to_client(clientSocket, data):
-    sendBytes = pickle.dumps(data)
-    clientSocket.send(sendBytes)
+    try:
+        sendBytes = pickle.dumps(data)
+        clientSocket.send(sendBytes)
+    except Exception as e:
+        print(e)
 
 def receive_from_client(clientSocket):
-    receivedBytes = clientSocket.recv(BUFFER_SIZE)
-    data = pickle.loads(receivedBytes)
-    return data
+    try:
+        receivedBytes = clientSocket.recv(BUFFER_SIZE)
+        data = pickle.loads(receivedBytes)
+        return data
+    except Exception as e:
+        print(e)
 
-def accept_loop(serverSocket):
+def entry_accept(serverSocket):
+    playerNumber = 0
     while True:
         try:
             clientSocket, addr = serverSocket.accept()
-            t = threading.Thread(target=send_recieve, args=(clientSocket, BUFFER_SIZE))
-            t.start()             
-        except InterruptedError as e:
-            if e.errno != errno.EINTR:
-                print("accept:{}".format(e))
-        except RuntimeError as e:
-            print("thread:{}".format(e))
- 
-def send_recieve(clientSocket, BUFFER_SIZE):
-    id = threading.get_ident()
-    while True:
-        try:
-            receivedBytes = clientSocket.recv(BUFFER_SIZE)
-        except InterruptedError as e:
-            print("recieve:{}".format(e))
-            break 
-        if (len(receivedBytes) == 0):
-            # EOF
-            print("[{}]recieve:EOF".format(id))
-            break
-        try:
-            receivedBytes = receivedBytes.rstrip()
-            boardData = pickle.loads(receivedBytes)
-            if(boardData == 'Please myPlayerColor'):
-                boardData = 'black'
-            else:
-                boardData = None
-            sendBytes = pickle.dumps(boardData)
-        except:
-            print("pickle:{}", pickle.PicklingError)
-        try:
-            clientSocket.send(sendBytes)
-        except InterruptedError as e:
-            print("send:{}".format(e))
-            break
-    clientSocket.close()
+            serverThread = threading.Thread(target = entry_thread, args = (clientSocket, playerNumber))
+            serverThread.start()
+            playerNumber += 1
+        except Exception as e:
+            print(e)
+            sys.exit(1)
+
+def entry_thread(clientSocket, playerNumber, clientSocketList = list()):
+    receiveData = receive_from_client(clientSocket)
+    if(receiveData == 'entry_to_server'):
+        send_to_client(clientSocket, PLAYER_COLOR_LIST[playerNumber])
+        clientSocketList.append(clientSocket)
+        if(len(PLAYER_COLOR_LIST) - 1 == playerNumber):
+            send_to_client(clientSocketList[0], 'black')
+            send_to_client(clientSocketList[1], 'white')
+        else:
+            None
 
 if __name__ == '__main__':
     main()
