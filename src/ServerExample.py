@@ -27,9 +27,6 @@ game_start_flag = 0
 turn_end_flag = 0
 gameoverflag = 0
 
-# 実験用
-cnt = 0
-
 # threading
 def main_thread(clientSocket, PlayerNo):
 	global game_start_flag
@@ -37,9 +34,8 @@ def main_thread(clientSocket, PlayerNo):
 	global gameoverflag
 	global Turn
 	global serverBoard
-	global cnt # 実験用
 	try:
-		while gameoverflag == 0:
+		while True:
 			# ゲーム開始前の処理
 			while game_start_flag == 0:
 				clientSocket.send("START".encode("utf-8"))
@@ -60,6 +56,7 @@ def main_thread(clientSocket, PlayerNo):
 						time.sleep(1.0)
 						break
 
+			print(Turn,PlayerNo)
 			# ターンかどうかの情報を送る,5byte
 			if Turn == PlayerNo:
 				clientSocket.send("TURNN".encode("utf-8"))
@@ -84,22 +81,17 @@ def main_thread(clientSocket, PlayerNo):
 							print(*serverBoard, sep = '\n')
 							turn_end_flag = 1
 							break
-			# 実験用
-			if cnt >= 3:
-				gameoverflag = 1
-			else:
-				# ターンを更新
-				Turn = not Turn
-				# フラグを初期化
-				turn_end_flag = 0
-				# 実験用
-				cnt += 1
+			# ターンを更新
+			Turn = not Turn
+			# フラグを初期化
+			turn_end_flag = 0
 				
 	except Exception as e:
 		print(e)
 	
 	finally:
 		clientSocket.close()
+		exit()
 
 # 中身が空かどうか判別する
 def isNotNULL(data):
@@ -119,15 +111,11 @@ s.listen(MAX_PLAYER)
 
 # クライアントからの要求を待つ
 while True:
-	try:
-		# 要求があれば接続を確立して、ソケット・アドレスを代入
-		clientSocket, addr = s.accept()
-		print(addr)
-	except KeyboardInterrupt:
-		clientSocket.close()
-		exit()
+	# 要求があれば接続を確立して、ソケット・アドレスを代入
+	clientSocket, addr = s.accept()
+	print(addr)
 	# スレッド処理
 	p = threading.Thread(target = main_thread, args = (clientSocket, PlayerNo))
 	p.start()
 	# クライアント番号を更新
-	PlayerNo += 1
+	PlayerNo = not PlayerNo

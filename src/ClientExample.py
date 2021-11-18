@@ -3,8 +3,6 @@ import pickle
 from enum import IntEnum
 import time
 
-from ServerExample import Turn
-
 # ゲーム情報
 class PlayerNum(IntEnum):
 	PLAYER1 = 1
@@ -26,11 +24,6 @@ turn = 0 # 0:black 1:white
 game_start_flag = 0
 read_flag = 0
 
-# Socketの作成
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# サーバーに接続を要求
-s.connect((socket.gethostname(), PORT_NUM))
-
 # 中身が空かどうか判別する
 def isNotNULL(data):
 	if len(data) != 0:
@@ -40,6 +33,10 @@ def isNotNULL(data):
 
 # メインループ
 while True:
+    # Socketの作成
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # サーバーに接続を要求
+    s.connect((socket.gethostname(), PORT_NUM))
     # ゲーム開始前の処理
     while game_start_flag == 0:
         res = s.recv(5)
@@ -75,6 +72,7 @@ while True:
                 
         elif res == b'WAITN':
             print("Waiting others...")
+            break
     
     # ボードの更新
     if turn == player:
