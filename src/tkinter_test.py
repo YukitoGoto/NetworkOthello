@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import sys
+=======
+>>>>>>> f70194fbcbe41ad443dfb0b97141229e77d70b08
 import tkinter
 from tkinter.constants import S
 
@@ -12,7 +15,11 @@ def osuna(event):
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
 
 r=tkinter.Tk()
+<<<<<<< HEAD
 r.title(u"tester")
+=======
+r.title(u"Othello")
+>>>>>>> f70194fbcbe41ad443dfb0b97141229e77d70b08
 r.geometry("400x400")
 
 ###【ラベル】任意の場所に文字列を表示できる###
@@ -33,6 +40,7 @@ Button.pack()                                                                   
 Button.place(x=0,y=80)
 Button.bind("<Button-1>",osuna)                                                 #押されたら反応する関数を呼び出し "<Button-1>"は左クリック、"<Button-2>"にするとホイールクリック、"<Button-3>"にすると右クリックに反応する                                                
 
+<<<<<<< HEAD
 ###【キャンバス】ウィンドウ上に線、円、塗りつぶしなどを描画###
 #以下コメントアウトを外すとオセロの盤面みたいなのが描画される
 # canvas=tkinter.Canvas(r,width=400,height=400)                                 #キャンバスの大きさを決定 
@@ -43,3 +51,5 @@ Button.bind("<Button-1>",osuna)                                                 
 # canvas.place(x=0,y=0)
 
 r.mainloop()
+=======
+>>>>>>> f70194fbcbe41ad443dfb0b97141229e77d70b08
