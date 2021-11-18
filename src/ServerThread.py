@@ -10,13 +10,14 @@ BUFFER_SIZE = 512
 
 '''
 [from server]
-turn(0:white-1:black)
-passflag(true-false)
+turn("white"-"black")
 gameoverflag(ture-false)
 board(list)
 [from client1]
+passflag(true-false)
 board(list)
 [fomr client2]
+passflag(true-false)
 board(list)
 '''
 
