@@ -1,5 +1,5 @@
+import sys
 import tkinter
-from tkinter.constants import S, Y
 from time import sleep
 
 BOARD_SIZE=8
@@ -14,42 +14,43 @@ board= [[None,None,None,None,None,None,None,None],
         [None,None,None,None,None,None,None,None],
         [None,None,None,None,None,None,None,None]]
 
-your_color="white"
+your_color="white"      #サーバの色指定を適用
 enemy_color="black"
+
+turn="white"           #サーバのターン指定を適用
 
 isGameover=False
 
 def leftClick(event):
-
     global your_color
-    global enemy_color 
+    global enemy_color
     global placeableflg
     global gameover_cnt
+    
+    if(isGameover==False):
+        if(turn==your_color):
 
-    clix=event.x//50
-    cliy=event.y//50
-    putflg=False
-    placeableflg=True
-    gameover_cnt=0
+            clix=event.x//50
+            cliy=event.y//50
+            putflg=False
+            placeableflg=True
+            gameover_cnt=0
 
-    othello_board_draw()
+            othello_board_draw()
 
-    if(board[clix][cliy]==None):
-        putflg=reverse_check(clix,cliy)
+            if(board[clix][cliy]==None):
+                putflg=reverse_check(clix,cliy)
 
-    if(putflg):
-        board_rename(clix,cliy)
-        temp=enemy_color
-        enemy_color=your_color
-        your_color=temp
+            if(putflg):
+                board_rename(clix,cliy)
 
-    circle_draw()
-    placeableflg=False
-    putablecheck()
-    yourturn_draw()
+            circle_draw()
+            placeableflg=False
+            putablecheck()
+            yourturn_draw()
 
-    if(isGameover):
-        Gameover()
+        if(isGameover):
+            Gameover()
 
 def reverse_check(clix,cliy):
     putflg=False
@@ -104,7 +105,7 @@ def circle_draw():
             ye=i*50+45
             if(board[j][i]=="white"):
                 canvas.create_oval(xs,ys,xe,ye,width=1.0,fill="white")
-            if(board[j][i]=="black"): 
+            if(board[j][i]=="black"):
                 canvas.create_oval(xs,ys,xe,ye,width=1.0,fill="black")
 
 def putablecheck():
@@ -131,10 +132,6 @@ def putablecheck():
         Static2.place(x=500,y=200)
 
         r.after(1000,passdel)
-
-        temp=enemy_color
-        enemy_color=your_color
-        your_color=temp
         
         if(gameover_cnt<2):
             gameover_cnt+=1
@@ -163,7 +160,7 @@ def Gameover():
         print("white win")
     else:
         print("black win")
-
+    
 
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
 
