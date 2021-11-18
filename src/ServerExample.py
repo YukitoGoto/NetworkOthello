@@ -24,70 +24,96 @@ PlayerNo = 0 # 0:black 1:white
 
 # フラグ関連
 game_start_flag = 0
-send_flag = 0
+turn_end_flag = 0
+gameoverflag = 0
 
+# 実験用
+cnt = 0
+
+# threading
 def main_thread(clientSocket, PlayerNo):
 	global game_start_flag
-	global send_flag
+	global turn_end_flag
+	global gameoverflag
 	global Turn
 	global serverBoard
+	global cnt # 実験用
+	try:
+		while gameoverflag == 0:
+			# ゲーム開始前の処理
+			while game_start_flag == 0:
+				clientSocket.send("START".encode("utf-8"))
+				time.sleep(1)
+				if PlayerNo == 0:
+					clientSocket.send("PLAY0".encode("utf-8"))
+					time.sleep(0.5)
+				if PlayerNo == 1:
+					clientSocket.send("PLAY1".encode("utf-8"))
+					time.sleep(0.5)
+				if PlayerNo == MAX_PLAYER - 1:
+					game_start_flag = 1
+				# 人数が集まるまで待機
+				while True:
+					# 人数が集まったら定型文を送り、ゲーム開始
+					if game_start_flag == 1:
+						clientSocket.send("MATCH".encode("utf-8"))
+						time.sleep(1.0)
+						break
 
-	# ゲーム開始前の処理
-	while game_start_flag == 0:
-		clientSocket.send("START".encode("utf-8"))
-		time.sleep(1)
-		if PlayerNo == 0:
-			clientSocket.send("PLAY1".encode("utf-8"))
-			time.sleep(0.5)
-		if PlayerNo == 1:
-			clientSocket.send("PLAY2".encode("utf-8"))
-			time.sleep(0.5)
-		if PlayerNo == MAX_PLAYER - 1:
-			game_start_flag = 1
-		# 人数が集まるまで待機
-		while True:
-			# 人数が集まったら定型文を送り、ゲーム開始
-			if game_start_flag == 1:
-				clientSocket.send("MATCH".encode("utf-8"))
-				time.sleep(1.0)
-				break
-
-	# ターン情報を送る,5byte
-	if Turn == 0:
-		clientSocket.send("TURNB".encode("utf-8"))
-	elif Turn == 1:
-		clientSocket.send("TURNW".encode("utf-8"))  
-	
-	# クライアントの受信準備確認が取れるまで待機
-	while send_flag == 0:
-		# ターンが来ていないクライアントはループを抜ける
-		if Turn != PlayerNo:
-			break
-		else:
-			res = clientSocket.recv(5)
-			# 確認が取れればターンが来ているクライアントにボードを送信する
-			if res == b'CHECK':
+			# ターンかどうかの情報を送る,5byte
+			if Turn == PlayerNo:
+				clientSocket.send("TURNN".encode("utf-8"))
+			else:
+				clientSocket.send("WAITN".encode("utf-8"))  
+			
+			# ボードの送信
+			if Turn == PlayerNo:
 				sendBytes = pickle.dumps(serverBoard)
 				clientSocket.send(sendBytes)
-				send_flag = 1
+			
+			# ボードの受信,更新
+			while turn_end_flag == 0:
+				if Turn == PlayerNo:
+					while True:
+						# クライアントからボードを受信
+						receivedBytes = clientSocket.recv(BUFFER_SIZE)
+						# 空でない場合は、ボードが送信されてきているので読み込む
+						if isNotNULL(receivedBytes) == True:
+							data = pickle.loads(receivedBytes)
+							serverBoard = data
+							print(*serverBoard, sep = '\n')
+							turn_end_flag = 1
+							break
+			# 実験用
+			if cnt >= 3:
+				gameoverflag = 1
+			else:
+				# ターンを更新
+				Turn = not Turn
+				# フラグを初期化
+				turn_end_flag = 0
+				# 実験用
+				cnt += 1
+				
+	except Exception as e:
+		print(e)
+	
+	finally:
+		clientSocket.close()
 
-	# ターンが来ているクライアントから受信,ボードを更新
-	if Turn == PlayerNo:
-		receivedBytes = clientSocket.recv(BUFFER_SIZE)
-		data = pickle.loads(receivedBytes)
-		print(*data, sep = '\n')
-		serverBoard = data # 盤面更新
+# 中身が空かどうか判別する
+def isNotNULL(data):
+	if len(data) != 0:
+		return True
+	else:
+		return False
 
-	# ターンを更新
-	Turn = not Turn
-	# フラグを元に戻す
-	send_flag = 0
+#メイン#
 
 # Socketの作成
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # IPアドレス・Port番号をソケット割り当てる
 s.bind((socket.gethostname(), PORT_NUM))
-
 # Socketの待機状態
 s.listen(MAX_PLAYER)
 
