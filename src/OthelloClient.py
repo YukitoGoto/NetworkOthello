@@ -8,6 +8,7 @@ import time
 NUM_SQUARE = 8
 PLAYER_COLOR_LIST = ['black', 'white']
 myPlayerColor = None
+enemyPlayercolor = None
 clientBoard = [[None] * NUM_SQUARE for i in range(NUM_SQUARE)]
 
 # ネットワーク情報
@@ -17,6 +18,7 @@ BUFFER_SIZE = 512
 def main():
     clientSocket = connect_to_server()
     myPlayerColor = entry_to_server(clientSocket)
+    enemyPlayercolor = PLAYER_COLOR_LIST[1] if (myPlayerColor == PLAYER_COLOR_LIST[0]) else PLAYER_COLOR_LIST[0]
     othello_client_main(clientBoard, clientSocket)
 
 def connect_to_server():
@@ -60,11 +62,12 @@ def receive_from_server(clientSocket):
         print(e)
 
 def othello_client_main(board, clientSocket):
-    while True:
-        turnFlag = receive_from_server(clientSocket)
-        gameoverFlag = receive_from_server(clientSocket)
-        board = receive_from_server(clientSocket)
-        if(gameoverFlag):
+    turnFlag = receive_from_server(clientSocket)
+    gameoverFlag = receive_from_server(clientSocket)
+    board = receive_from_server(clientSocket)
+    print(turnFlag)
+    print(gameoverFlag)
+    print(board)
 
 if __name__ == '__main__':
     main()
