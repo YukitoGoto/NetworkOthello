@@ -15,7 +15,7 @@ NUM_SQUARE = 8
 clientBoard = [[None] * NUM_SQUARE for i in range(NUM_SQUARE)]
 
 # ネットワーク情報
-PORT_NUM = 7010
+PORT_NUM = 8888
 BUFFER_SIZE = 4092
 player = 0 # 0:black 1:white
 
