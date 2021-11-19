@@ -17,8 +17,7 @@ BUFFER_SIZE = 512
 def main():
     clientSocket = connect_to_server()
     myPlayerColor = entry_to_server(clientSocket)
-    print('myPlayerColor is ' + myPlayerColor + '.')
-    print(receive_from_server(clientSocket))
+    othello_client_main(clientBoard, clientSocket)
 
 def connect_to_server():
     try:
@@ -45,13 +44,6 @@ def entry_to_server(clientSocket):
         clientSocket.close()
         sys.exit(1)
 
-'''
-def check_my_turn(clientSocket):
-    try:
-        while True:
-            receive_from_server(clientSocket)
-'''
-
 def send_to_server(clientSocket, data):
     try:    
         sendBytes = pickle.dumps(data)
@@ -66,6 +58,13 @@ def receive_from_server(clientSocket):
         return data
     except Exception as e:
         print(e)
+
+def othello_client_main(board, clientSocket):
+    while True:
+        turnFlag = receive_from_server(clientSocket)
+        gameoverFlag = receive_from_server(clientSocket)
+        board = receive_from_server(clientSocket)
+        if(gameoverFlag):
 
 if __name__ == '__main__':
     main()
