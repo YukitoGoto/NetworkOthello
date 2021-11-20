@@ -17,18 +17,21 @@ board= [[None,None,None,None,None,None,None,None],
 your_color="white"      #サーバの色指定を適用
 enemy_color="black"
 
-turn="white"           #サーバのターン指定を適用
+turnflg=False
 
 isGameover=False
 
 def leftClick(event):
+
     global your_color
     global enemy_color
     global placeableflg
     global gameover_cnt
+    global turnflg
     
     if(isGameover==False):
-        if(turn==your_color):
+        if(turnflg==True):
+
             clix=event.x//50
             cliy=event.y//50
             putflg=False
@@ -47,6 +50,7 @@ def leftClick(event):
             placeableflg=False
             putablecheck()
             yourturn_draw()
+            turnflg=False
 
         if(isGameover):
             Gameover()
