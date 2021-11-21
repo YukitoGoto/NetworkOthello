@@ -15,6 +15,10 @@ PlayerColor = {
 MAX_PLAYER = 2
 NUM_SQUARE = 8
 serverBoard = [[None] * NUM_SQUARE for i in range(NUM_SQUARE)]
+serverBoard[3][3] = 'black'
+serverBoard[3][4] = 'white'
+serverBoard[4][3] = 'white'
+serverBoard[4][4] = 'black'
 Turn = 0 # 0:black 1:white
 
 # ネットワーク情報
@@ -22,73 +26,151 @@ PORT_NUM = 7010
 BUFFER_SIZE = 4092
 PlayerNo = 0 # 0:black 1:white
 
-# フラグ関連
-game_start_flag = 0
-turn_end_flag = 0
-gameoverflag = 0
+# 各フラグの初期化
+game_start_flag = False
+gameoverflag=False
+p0connect_flag = False
+p1connect_flag = False
+p0turnend_flag = False
+p1turnend_flag = False
+p0pass_flag = False
+p1pass_flag = False
 
 # threading
 def main_thread(clientSocket, PlayerNo):
 	global game_start_flag
-	global turn_end_flag
 	global gameoverflag
 	global Turn
 	global serverBoard
+	global p0turnend_flag
+	global p1turnend_flag
+	global p0connect_flag
+	global p1connect_flag
+	global p0pass_flag
+	global p1pass_flag
 	try:
 		while True:
+			
 			# ゲーム開始前の処理
-			while game_start_flag == 0:
+			while game_start_flag == False:
 				clientSocket.send("START".encode("utf-8"))
 				time.sleep(1)
 				if PlayerNo == 0:
-					clientSocket.send("PLAY0".encode("utf-8"))
+					clientSocket.send("BLACK".encode("utf-8"))
 					time.sleep(0.5)
 				if PlayerNo == 1:
-					clientSocket.send("PLAY1".encode("utf-8"))
+					clientSocket.send("WHITE".encode("utf-8"))
 					time.sleep(0.5)
 				if PlayerNo == MAX_PLAYER - 1:
-					game_start_flag = 1
+					game_start_flag = True
 				# 人数が集まるまで待機
 				while True:
 					# 人数が集まったら定型文を送り、ゲーム開始
-					if game_start_flag == 1:
+					if game_start_flag == True:
 						clientSocket.send("MATCH".encode("utf-8"))
 						time.sleep(1.0)
 						break
 
-			print(Turn,PlayerNo)
+			# クライアントからプレイヤー情報を受け取る
+			if game_start_flag == True:
+				while True:
+					res = clientSocket.recv(5)
+					print("kita")
+					if res == b'BLACK':
+						PlayerNo = 0
+						# ターン終了時のフラグを初期化
+						p0turnend_flag = False
+						p0connect_flag = True
+						break
+					elif res == b'WHITE':
+						PlayerNo = 1
+						# ターン終了時のフラグを初期化
+						p1turnend_flag = False
+						p1connect_flag = True
+						break
+
+				# 両方の接続が確認できるまで待機
+				while True:
+					if p0connect_flag == True & p1connect_flag == True:
+						break
+
 			# ターンかどうかの情報を送る,5byte
 			if Turn == PlayerNo:
 				clientSocket.send("TURNN".encode("utf-8"))
-			else:
-				clientSocket.send("WAITN".encode("utf-8"))  
-			
-			# ボードの送信
+			elif Turn != PlayerNo:
+				clientSocket.send("WAITN".encode("utf-8"))
+
+			# ターンが来ているプレイヤーとボードの送受信
 			if Turn == PlayerNo:
+				# ボードの送信
 				sendBytes = pickle.dumps(serverBoard)
 				clientSocket.send(sendBytes)
-			
-			# ボードの受信,更新
-			while turn_end_flag == 0:
-				if Turn == PlayerNo:
-					while True:
-						# クライアントからボードを受信
+
+				# パスかどうかの情報を4バイトで受信する
+				while True:
+					respass = clientSocket.recv(4)
+					if respass == b'PASS':
+						print(PlayerNo, ": Pass")
+						if PlayerNo == 0:
+							p0pass_flag = True
+						elif PlayerNo == 1:
+							p1pass_flag = True
+						break
+					elif respass == b'DONE':
+						if PlayerNo == 0:
+							p0pass_flag = False
+						elif PlayerNo == 1:
+							p1pass_flag = False
+						break
+
+				# 両方パスなら、ゲームオーバーフラグを立てる
+				if p0pass_flag == True & p1pass_flag == True:
+					gameoverflag = True
+				
+				# ボードの受信
+				while True:
+						# ボードを受信する
 						receivedBytes = clientSocket.recv(BUFFER_SIZE)
 						# 空でない場合は、ボードが送信されてきているので読み込む
 						if isNotNULL(receivedBytes) == True:
 							data = pickle.loads(receivedBytes)
 							serverBoard = data
-							print(*serverBoard, sep = '\n')
-							turn_end_flag = 1
+							#print(*serverBoard, sep = '\n')
+							# ターンを経過させる
+							if Turn == 0:
+								Turn = 1
+							elif Turn == 1:
+								Turn = 0
+							p0turnend_flag = True
 							break
-			# ターンを更新
-			Turn = not Turn
-			# フラグを初期化
-			turn_end_flag = 0
-				
+			else:
+				p1turnend_flag = True
+
+			# ターン終了後の処理
+			while True:
+				if p0turnend_flag == True & p1turnend_flag == True:
+					# ターン開始時のフラグを初期化
+					if PlayerNo == 0:
+						p0connect_flag = False
+					elif PlayerNo == 1:
+						p1connect_flag = False
+					
+					# ゲームオーバー処理
+					if gameoverflag == True:
+						clientSocket.send("GAMEOVER".encode("utf-8"))
+						break
+					else:
+						clientSocket.send("NEXTTURN".encode("utf-8"))
+						break
+
+			if PlayerNo == 1:
+				PlayerNo = 0
+			else:
+				PlayerNo = 1
+
 	except Exception as e:
 		print(e)
-	
+
 	finally:
 		clientSocket.close()
 		exit()
@@ -101,7 +183,6 @@ def isNotNULL(data):
 		return False
 
 #メイン#
-
 # Socketの作成
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # IPアドレス・Port番号をソケット割り当てる
@@ -117,5 +198,7 @@ while True:
 	# スレッド処理
 	p = threading.Thread(target = main_thread, args = (clientSocket, PlayerNo))
 	p.start()
-	# クライアント番号を更新
-	PlayerNo = not PlayerNo
+	if PlayerNo == 1:
+		PlayerNo = 0
+	else:
+		PlayerNo = 1

@@ -2,6 +2,8 @@ import sys
 import tkinter
 from time import sleep
 
+import ClientExample
+
 BOARD_SIZE=8
 
 
@@ -14,8 +16,7 @@ board= [[None,None,None,None,None,None,None,None],
         [None,None,None,None,None,None,None,None],
         [None,None,None,None,None,None,None,None]]
 
-your_color="white"      #サーバの色指定を適用
-enemy_color="black"
+your_color,enemy_color=ClientExample.start_call()
 
 turnflg=False
 
@@ -45,13 +46,18 @@ def leftClick(event):
 
             if(putflg):
                 board_rename(clix,cliy)
+                turnflg=False
+                ClientExample.board_send(board)
 
             circle_draw()
             placeableflg=False
             putablecheck()
-            yourturn_draw()
-            turnflg=False
 
+            if(putflg):
+                r.quit()
+
+            # yourturn_draw()
+            
         if(isGameover):
             Gameover()
 
@@ -112,8 +118,8 @@ def circle_draw():
                 canvas.create_oval(xs,ys,xe,ye,width=1.0,fill="black")
 
 def putablecheck():
-    passflg=True
     global gameover_cnt
+    passflg=True
     for putable_y in range(len(board)):
         for putable_x in range(len(board[putable_y])):
             if(board[putable_x][putable_y]==None):
@@ -163,23 +169,28 @@ def Gameover():
         print("white win")
     else:
         print("black win")
-    
 
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
-
 r=tkinter.Tk()
-r.title(u"Othello")
+r.title(u"Othello"+str(your_color)) 
 r.geometry("600x400")
 
-###【キャンバス】ウィンドウ上に線、円、塗りつぶしなどを描画###
-#以下コメントアウトを外すとオセロの盤面みたいなのが描画される
+while isGameover==False:
 
-canvas=tkinter.Canvas(r,width=400,height=400)                                 #キャンバスの大きさを決定 
-othello_board_draw()
-yourturn_draw()
-placeableflg=False
-putablecheck()
-canvas.place(x=0,y=0)
-circle_draw()
-canvas.bind("<ButtonPress-1>",leftClick)
-r.mainloop()
+###【キャンバス】ウィンドウ上に線、円、塗りつぶしなどを描画###
+    
+    canvas=tkinter.Canvas(r,width=400,height=400)                                 #キャンバスの大きさを決定 
+
+    othello_board_draw()
+    # yourturn_draw()
+    board,turnflg=ClientExample.turn_call()
+    print(turnflg)
+    if turnflg:
+        placeableflg=False
+        putablecheck()
+        canvas.place(x=0,y=0)
+        circle_draw()
+        canvas.bind("<ButtonPress-1>",leftClick)
+        r.mainloop()
+    
+    ClientExample.turn_end()
