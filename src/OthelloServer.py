@@ -76,7 +76,6 @@ def main_thread(clientSocket, PlayerNo):
 			if game_start_flag == True:
 				while True:
 					res = clientSocket.recv(5)
-					print("kita")
 					if res == b'BLACK':
 						PlayerNo = 0
 						# ターン終了時のフラグを初期化
