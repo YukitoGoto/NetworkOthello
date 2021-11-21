@@ -1,4 +1,30 @@
-# NetworkApplication
+# NetworkOthello
+## About
+Server-Client間でオセロを対戦できる。
+## Execute
+### Server
+~~~
+$ python src/OthelloServer.py
+('192.168.0.12', 59197)
+('192.168.0.12', 59198)
+kita
+kita
+~~~
+### Client1
+~~~
+$ python src/OthelloMain.py
+Welcome Othello Game! please wait ...
+Your color is 'black'
+Matching success! Game start!
+~~~
+### Client2
+~~~
+$ python src/OthelloMain.py
+Welcome Othello Game! please wait ...
+Your color is 'white'
+Matching success! Game start!
+Waiting Others...
+~~~
 ## Reference
 ### GUI
 - [【Python/tkinter】オセロ（リバーシ）ゲームの作り方](https://daeudaeu.com/tkinter-othello/#i-5)
