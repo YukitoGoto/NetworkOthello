@@ -26,6 +26,7 @@ PORT_NUM = 7010
 BUFFER_SIZE = 4092
 PlayerNo = 0 # 0:black 1:white
 
+
 # 各フラグの初期化
 game_start_flag = False
 gameoverflag=False
@@ -50,7 +51,6 @@ def main_thread(clientSocket, PlayerNo):
 	global p1pass_flag
 	try:
 		while True:
-			
 			# ゲーム開始前の処理
 			while game_start_flag == False:
 				clientSocket.send("START".encode("utf-8"))
@@ -135,7 +135,6 @@ def main_thread(clientSocket, PlayerNo):
 						if isNotNULL(receivedBytes) == True:
 							data = pickle.loads(receivedBytes)
 							serverBoard = data
-							#print(*serverBoard, sep = '\n')
 							# ターンを経過させる
 							if Turn == 0:
 								Turn = 1

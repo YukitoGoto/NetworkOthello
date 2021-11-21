@@ -17,7 +17,7 @@ NUM_SQUARE = 8
 clientBoard = [[None] * NUM_SQUARE for i in range(NUM_SQUARE)]
 
 # ネットワーク情報
-PORT_NUM = 7010
+PORT_NUM = 8888
 BUFFER_SIZE = 4092
 player = 0 # 0:black 1:white
 
@@ -27,8 +27,6 @@ read_flag = False
 turn_flag = False
 pass_flag = False
 
-# テスト用
-cnt = 0
 
 # 中身が空かどうか判別する
 def isNotNULL(data):
@@ -56,6 +54,7 @@ def start_call():
             player = 0
             your_color = "black"
             enemy_color = "white"
+
         elif res == b'WHITE':
             print("Your color is \'white\'")
             player = 1
@@ -95,7 +94,8 @@ def turn_call():
                     # 空でない場合は、ボードが送信されてきているので読み込む
                     if isNotNULL(receivedBytes) == True:
                         data = pickle.loads(receivedBytes)
-                        clientBoard=data
+                        clientBoard = data
+
                         turn_flag = True
                         read_flag = True
                         break
@@ -137,4 +137,3 @@ def turn_end():
             exit()
         elif res == b'NEXTTURN':
             break
-# メインループ
