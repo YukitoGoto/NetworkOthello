@@ -126,12 +126,6 @@ def putablecheck():
         Static2.place(x=500,y=100)
 
         r.after(1000,passdel)
-        # if(gameover_cnt<2):
-        #     gameover_cnt+=1
-        #     putablecheck()
-        # else:
-        #     global isGameover
-        #     isGameover=True
 
 def passdel():
     Static2.place_forget()
