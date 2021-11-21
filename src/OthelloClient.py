@@ -100,7 +100,6 @@ def turn_call():
                         read_flag = True
                         break
         elif res == b'WAITN':
-            print("Waiting Others...")
             turn_flag = False
             break
 
@@ -127,24 +126,17 @@ def turn_end():
     global pass_flag
 
     # フラグを元に戻す
+    isGameover=False
     read_flag = False
     pass_flag = False
     time.sleep(1)
     while True:
         res = s.recv(8)
         if res == b'GAMEOVER':
-            white_count=0
-            black_count=0
-            for y in range(len(clientBoard)):
-                white_count+=clientBoard[y].count("white")
-                black_count+=clientBoard[y].count("black")
-            print("white:"+str(white_count))
-            print("black:"+str(black_count))
-            if(white_count>black_count):
-                print("white win!")
-            else:
-                print("black win!")
+            isGameover=True
+            return isGameover
             time.sleep(5)
             exit()
         elif res == b'NEXTTURN':
-            break
+            return isGameover
+        

@@ -1,3 +1,4 @@
+from time import sleep
 import tkinter
 import tkinter.font as f
 import OthelloClient
@@ -147,6 +148,42 @@ def waiting_draw():
 
 def r_quit():
     r.quit()
+
+def GameOver():
+
+    white_count=0
+    black_count=0
+
+    for y in range(len(board)):
+        white_count+=board[y].count("white")
+        black_count+=board[y].count("black")
+
+    circle_draw()
+    Static2=tkinter.Label(text="White:"+str(white_count)+"\n",foreground=enemy_color,background=your_color,font=("MV Boli","30","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+    Static2.pack()                                                                                 #表示
+    Static2.place(x=410,y=90)
+    r.after(100,r_quit)
+    r.mainloop()
+    sleep(1)
+
+    Static2=tkinter.Label(text="White:"+str(white_count)+"\nBlack:"+str(black_count),foreground=enemy_color,background=your_color,font=("MV Boli","30","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+    Static2.pack()                                                                                 #表示
+    Static2.place(x=410,y=90)
+    r.after(100,r_quit)
+    r.mainloop()
+    sleep(1)
+
+    if(white_count>black_count):
+        Static3=tkinter.Label(text="White\nWIN!!",foreground=enemy_color,background=your_color,font=("HGP行書体","40","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+        Static3.pack()                                                                                 #表示
+        Static3.place(x=430,y=220)
+    else:
+        Static3=tkinter.Label(text="Black\nWIN!!",foreground=enemy_color,background=your_color,font=("HGP行書体","40","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+        Static3.pack()                                                                                 #表示
+        Static3.place(x=430,y=220)
+    r.after(100,r_quit)
+    r.mainloop()
+
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
 r=tkinter.Tk()
 r.title(u"Othello"+str(your_color)) 
@@ -169,6 +206,8 @@ while isGameover==False:
         circle_draw()
         canvas.bind("<ButtonPress-1>",leftClick)
         r.mainloop()
-
     OthelloClient.board_send(board,passflg)
-    OthelloClient.turn_end()
+    isGameover=OthelloClient.turn_end()
+    if(isGameover):
+        GameOver()
+        sleep(5)
