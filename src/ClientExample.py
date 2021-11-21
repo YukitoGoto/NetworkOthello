@@ -106,9 +106,10 @@ def turn_call():
 
     return clientBoard,turn_flag
 
-def board_send(board):
+def board_send(board,passflg):
     # ボードの更新
     clientBoard=board
+    pass_flag=passflg
     # パスかどうかの情報をサーバーに送る
     if turn_flag == True:
         if pass_flag == True:
@@ -132,7 +133,17 @@ def turn_end():
     while True:
         res = s.recv(8)
         if res == b'GAMEOVER':
-            print("GAMEOVER")
+            white_count=0
+            black_count=0
+            for y in range(len(clientBoard)):
+                white_count+=clientBoard[y].count("white")
+                black_count+=clientBoard[y].count("black")
+            print("white:"+str(white_count))
+            print("black:"+str(black_count))
+            if(white_count>black_count):
+                print("white win!")
+            else:
+                print("black win!")
             time.sleep(5)
             exit()
         elif res == b'NEXTTURN':

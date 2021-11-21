@@ -3,6 +3,7 @@ import pickle
 import threading
 from enum import IntEnum
 import time
+import sys
 
 # ゲーム情報
 class PlayerNum(IntEnum):
