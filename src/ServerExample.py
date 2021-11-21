@@ -3,6 +3,7 @@ import pickle
 import threading
 from enum import IntEnum
 import time
+import sys
 
 # ゲーム情報
 class PlayerNum(IntEnum):
@@ -135,7 +136,6 @@ def main_thread(clientSocket, PlayerNo):
 						if isNotNULL(receivedBytes) == True:
 							data = pickle.loads(receivedBytes)
 							serverBoard = data
-							#print(*serverBoard, sep = '\n')
 							# ターンを経過させる
 							if Turn == 0:
 								Turn = 1

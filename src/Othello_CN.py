@@ -1,6 +1,4 @@
-import sys
 import tkinter
-from time import sleep
 
 import ClientExample
 
@@ -19,7 +17,7 @@ board= [[None,None,None,None,None,None,None,None],
 your_color,enemy_color=ClientExample.start_call()
 
 turnflg=False
-
+passflg=False
 isGameover=False
 
 def leftClick(event):
@@ -39,27 +37,15 @@ def leftClick(event):
             placeableflg=True
             gameover_cnt=0
 
-            othello_board_draw()
-
             if(board[clix][cliy]==None):
                 putflg=reverse_check(clix,cliy)
 
             if(putflg):
                 board_rename(clix,cliy)
                 turnflg=False
-                ClientExample.board_send(board)
-
-            circle_draw()
-            placeableflg=False
-            putablecheck()
-
-            if(putflg):
-                r.quit()
-
-            # yourturn_draw()
-            
-        if(isGameover):
-            Gameover()
+                r.after(100,r_quit)
+                othello_board_draw()
+                circle_draw()
 
 def reverse_check(clix,cliy):
     putflg=False
@@ -71,8 +57,6 @@ def reverse_check(clix,cliy):
             if(i==0 and j==0):
                 pass
             elif(outrange_check(check_x,check_y)==False):
-                # print("cx="+str(clix)+" cy="+str(cliy))
-                # print("x="+str(j)+" y="+str(i))
                 pass
             elif(board[check_x][check_y]==enemy_color):
                 while(outrange_check(check_x+j,check_y+i) and board[check_x+j][check_y+i]==enemy_color):
@@ -119,6 +103,7 @@ def circle_draw():
 
 def putablecheck():
     global gameover_cnt
+    global passflg
     passflg=True
     for putable_y in range(len(board)):
         for putable_x in range(len(board[putable_y])):
@@ -137,39 +122,29 @@ def putablecheck():
         global Static2
 
         Static2=tkinter.Label(text=str(your_color)+" pass...",foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
-        Static2.pack()                                                                  #表示
-        Static2.place(x=500,y=200)
+        Static2.pack()                                                                                 #表示
+        Static2.place(x=500,y=100)
 
         r.after(1000,passdel)
-        
-        if(gameover_cnt<2):
-            gameover_cnt+=1
-            putablecheck()
-        else:
-            global isGameover
-            isGameover=True
+        # if(gameover_cnt<2):
+        #     gameover_cnt+=1
+        #     putablecheck()
+        # else:
+        #     global isGameover
+        #     isGameover=True
 
 def passdel():
     Static2.place_forget()
+    r.quit()
 
 def yourturn_draw():
-    Static1=tkinter.Label(text=your_color,foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+    Static1=tkinter.Label(text="your_turn",foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
     Static1.pack()                                                                  #表示
     Static1.place(x=500,y=100)
+    
 
-def Gameover():
-    white_count=0
-    black_count=0
-    for y in range(len(board)):
-        white_count+=board[y].count("white")
-        black_count+=board[y].count("black")
-    print(white_count)
-    print(black_count)
-    if(white_count>black_count):
-        print("white win")
-    else:
-        print("black win")
-
+def r_quit():
+    r.quit()
 ###【基本】ウィンドウ名とウィンドウのサイズを決定可能###
 r=tkinter.Tk()
 r.title(u"Othello"+str(your_color)) 
@@ -180,7 +155,8 @@ while isGameover==False:
 ###【キャンバス】ウィンドウ上に線、円、塗りつぶしなどを描画###
     
     canvas=tkinter.Canvas(r,width=400,height=400)                                 #キャンバスの大きさを決定 
-
+    canvas.place(x=0,y=0)
+    
     othello_board_draw()
     # yourturn_draw()
     board,turnflg=ClientExample.turn_call()
@@ -188,9 +164,9 @@ while isGameover==False:
     if turnflg:
         placeableflg=False
         putablecheck()
-        canvas.place(x=0,y=0)
         circle_draw()
         canvas.bind("<ButtonPress-1>",leftClick)
         r.mainloop()
-    
+
+    ClientExample.board_send(board,passflg)
     ClientExample.turn_end()
