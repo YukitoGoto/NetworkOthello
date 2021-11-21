@@ -1,3 +1,5 @@
+import tkinter
+from tkinter.constants import S, Y
 import socket
 import pickle
 from enum import IntEnum
@@ -23,6 +25,8 @@ player = 0 # 0:black 1:white
 game_start_flag = False
 read_flag = False
 turn_flag = False
+pass_flag = False
+
 
 # 中身が空かどうか判別する
 def isNotNULL(data):
@@ -31,19 +35,14 @@ def isNotNULL(data):
 	else:
 		return False
 
-# メインループ
-while True:
+def start_call():
+    global player
+    global game_start_flag
+    global s
     # Socketの作成
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # サーバーに接続を要求
     s.connect((socket.gethostname(), PORT_NUM))
-
-    # サーバーにプレイヤー情報を伝える
-    if game_start_flag == 1:
-        if player == 0:
-            s.send("BLACK".encode("utf-8"))
-        elif player == 1:
-            s.send("WHITE".encode("utf-8"))
 
     # ゲーム開始前の処理
     while game_start_flag == 0:
@@ -53,14 +52,37 @@ while True:
         elif res == b'BLACK':
             print("Your color is \'black\'")
             player = 0
+            your_color = "black"
+            enemy_color = "white"
+
         elif res == b'WHITE':
             print("Your color is \'white\'")
             player = 1
+            your_color = "white"
+            enemy_color = "black"
         elif res == b'MATCH':
             print("Matching success! Game start!")
             game_start_flag = 1
             time.sleep(0.5)
+        # サーバーにプレイヤー情報を伝える
+    if player == 0:
+        s.send("BLACK".encode("utf-8"))
+    elif player == 1:
+        s.send("WHITE".encode("utf-8"))
 
+    return your_color,enemy_color
+
+def turn_call():
+
+    global s
+    global read_flag
+    global clientBoard
+    global turn_flag
+
+    if player == 0:
+        s.send("BLACK".encode("utf-8"))
+    elif player == 1:
+        s.send("WHITE".encode("utf-8"))
     # ボードの受信
     while read_flag == False:
         # サーバーからターン情報(5byte)を受信
@@ -73,7 +95,7 @@ while True:
                     if isNotNULL(receivedBytes) == True:
                         data = pickle.loads(receivedBytes)
                         clientBoard = data
-                        print(*clientBoard, sep = '\n')
+
                         turn_flag = True
                         read_flag = True
                         break
@@ -81,40 +103,37 @@ while True:
             print("Waiting Others...")
             turn_flag = False
             break
-    
+
+    return clientBoard,turn_flag
+
+def board_send(board):
     # ボードの更新
+    clientBoard=board
+    # パスかどうかの情報をサーバーに送る
     if turn_flag == True:
-        if player == 0:
-            # ここから黒のオセロ処理
-            clientBoard[1][1] = PlayerColor[PlayerNum.PLAYER1] #テスト用
-
-
-        if player == 1:
-            # ここから白のオセロ処理
-            clientBoard[1][1] = PlayerColor[PlayerNum.PLAYER2] #テスト用
-
+        if pass_flag == True:
+            s.send("PASS".encode("utf-8"))
+        else:
+            s.send("DONE".encode("utf-8"))
     # ボードの送信
     if turn_flag == True:
         sendBytes = pickle.dumps(clientBoard)
         s.send(sendBytes)
 
+def turn_end():
+
+    global read_flag
+    global pass_flag
+
     # フラグを元に戻す
     read_flag = False
-    time.sleep(0.5)
-
-    # ターン終了の処理
+    pass_flag = False
+    time.sleep(1)
     while True:
         res = s.recv(8)
         if res == b'GAMEOVER':
-            s.send("CHECK".encode("utf-8"))
-            while True:
-                receivedBytes = s.recv(BUFFER_SIZE)
-                if isNotNULL(receivedBytes) == True:
-                        data = pickle.loads(receivedBytes)
-                        clientBoard = data
-                        print(*clientBoard, sep = '\n')
-                        print("GAMEOVER")
-                        time.sleep(5)
-                        exit()
+            print("GAMEOVER")
+            time.sleep(5)
+            exit()
         elif res == b'NEXTTURN':
             break
