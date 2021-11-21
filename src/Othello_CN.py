@@ -19,7 +19,6 @@ your_color,enemy_color=ClientExample.start_call()
 turnflg=False
 passflg=False
 isGameover=False
-# fontStyle = f.Font(family="Lucida Grande", size=50)
 
 def leftClick(event):
 
@@ -124,9 +123,9 @@ def putablecheck():
         global enemy_color
         global Static2
 
-        Static2=tkinter.Label(text=str(your_color)+" pass...",foreground="blue",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+        Static2=tkinter.Label(text=str(your_color)+"\npass...",foreground="gray",background=your_color,font=("MV Boli","30","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
         Static2.pack()                                                                                 #表示
-        Static2.place(x=500,y=100)
+        Static2.place(x=430,y=100)
 
         r.after(1000,passdel)
 
@@ -136,14 +135,15 @@ def passdel():
 
 def yourturn_draw():
     global Static1
-    Static1=tkinter.Label(text="your turn",foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+    Static1=tkinter.Label(text="your    \nturn",foreground=enemy_color,background=your_color,font=("MV Boli","30","bold"))   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
     Static1.pack()                                                                  #表示
-    Static1.place(x=500,y=100)
+    Static1.place(x=430,y=100)
 
 def waiting_draw():
-    Static2=tkinter.Label(text="waiting "+str(enemy_color),foreground="black",background="white")   #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
+    Static2=tkinter.Label(text="waiting\n"+str(enemy_color),foreground=enemy_color,background=your_color,font=("MV Boli","30","bold"))    #ラベルの基本設定 引数は前から(表示したいテキスト,文字色,文字の背景)
     Static2.pack()                                                                                 #表示
-    Static2.place(x=500,y=100)
+    Static2.place(x=430,y=100)
+    Static1.pack_forget()
 
 def r_quit():
     r.quit()
@@ -151,6 +151,7 @@ def r_quit():
 r=tkinter.Tk()
 r.title(u"Othello"+str(your_color)) 
 r.geometry("600x400")
+r.configure(bg=your_color)
 
 while isGameover==False:
 
