@@ -7,8 +7,6 @@ Server-Client間でオセロを対戦できる。
 $ python src/OthelloServer.py
 ('192.168.0.12', 59197)
 ('192.168.0.12', 59198)
-kita
-kita
 ~~~
 ### Client1
 ~~~
